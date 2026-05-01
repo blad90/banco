@@ -17,7 +17,7 @@ services:
     restart: unless-stopped
 
   mysql:
-    image: postgres:15-alpine
+    image: mysql:latest
     container_name: mysql
     volumes:
       - db-data:/var/lib/mysql
@@ -35,4 +35,4 @@ services:
       retries: 5
 
 volumes:
-  db_data:
+  db-data:
