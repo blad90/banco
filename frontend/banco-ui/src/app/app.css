@@ -1,0 +1,21 @@
+.header {
+    color: rgb(0, 57, 180);
+}
+
+.header-container {
+    border-bottom: 1px solid rgb(126, 126, 126);
+    margin-left: 1%;
+}
+
+.layout {
+    display: flex;
+    height: calc(100vh - 60px);
+}
+
+.main{
+    flex: 1; 
+    padding: 1rem;
+    overflow: auto; 
+    background-color: rgb(248, 248, 248);
+    min-width: 0; 
+}
