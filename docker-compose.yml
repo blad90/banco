@@ -1,9 +1,19 @@
 services:
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    image: banco-frontend:1.0.0
+    container_name: banco-frontend
+    ports:
+      - "8082:8082"
+
   backend:
     build:
       context: .
       dockerfile: backend/Dockerfile
     image: banco-backend:1.0.0
+    container_name: banco-backend
     ports:
       - "8081:8081"
     environment:
