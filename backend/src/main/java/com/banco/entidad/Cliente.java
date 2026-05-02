@@ -24,6 +24,13 @@ public class Cliente extends Persona{
         this.cuentas = cuentas;
     }
 
+    public Cliente(Long id, String nombre, String genero, int edad, String identificacion, String direccion, String telefono, Long clienteId, String contrasena, boolean estado) {
+        super(id, nombre, genero, edad, identificacion, direccion, telefono);
+        this.clienteId = clienteId;
+        this.contrasena = contrasena;
+        this.estado = estado;
+    }
+
     @OneToMany
     private List<Cuenta> cuentas;
 
@@ -43,7 +50,7 @@ public class Cliente extends Persona{
         this.contrasena = contrasena;
     }
 
-    public boolean isEstado() {
+    public boolean getEstado() {
         return estado;
     }
 
