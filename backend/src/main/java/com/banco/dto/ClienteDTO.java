@@ -1,21 +1,42 @@
 package com.banco.dto;
 
+import jakarta.validation.constraints.*;
+
 public class ClienteDTO {
     private Long id;
+
+    @NotBlank(message = "El nombre es requerido")
     private String nombre;
+
+    @NotBlank(message = "El género es requerido")
     private String genero;
-    private int edad;
+
+    @NotNull(message = "La edad es requerida")
+    @Min(18) @Max(70)
+    private Integer edad;
+
+    @NotBlank(message = "La identificación es requerida")
     private String identificacion;
+
+    @NotBlank(message = "El clienteId es requerido")
+    private String clienteId;
+
+    @NotBlank(message = "La dirección es requerido")
     private String direccion;
+
+    @NotBlank(message = "El teléfono es requerido")
     private String telefono;
-    private Long clienteId;
+
+    @NotBlank(message = "La contraseña es requerido")
+    @Size(min = 8)
     private String contrasena;
-    private boolean estado;
+
+    private Boolean estado;
 
     public ClienteDTO() {
     }
 
-    public ClienteDTO(String nombre, String genero, int edad, String identificacion, String direccion, String telefono, Long clienteId, String contrasena, boolean estado) {
+    public ClienteDTO(String nombre, String genero, int edad, String identificacion, String direccion, String telefono, String clienteId, String contrasena, boolean estado) {
         this.nombre = nombre;
         this.genero = genero;
         this.edad = edad;
@@ -25,6 +46,10 @@ public class ClienteDTO {
         this.clienteId = clienteId;
         this.contrasena = contrasena;
         this.estado = estado;
+    }
+
+    public static ClienteDTO builder() {
+        return new ClienteDTO();
     }
 
     public Long getId() {
@@ -83,11 +108,11 @@ public class ClienteDTO {
         this.telefono = telefono;
     }
 
-    public Long getClienteId() {
+    public String getClienteId() {
         return clienteId;
     }
 
-    public void setClienteId(Long clienteId) {
+    public void setClienteId(String clienteId) {
         this.clienteId = clienteId;
     }
 

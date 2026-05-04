@@ -1,44 +1,52 @@
 package com.banco.entidad;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
 @Entity
-@Table(name = "cliente")
+@Table(name = "cliente", uniqueConstraints = @UniqueConstraint(name = "uk_cliente_id", columnNames = "cliente_id"))
 public class Cliente extends Persona{
-    private Long clienteId;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @NotBlank(message = "El clienteId es requerido")
+    @Size(max = 50)
+    @Column(name = "cliente_id", nullable = false, unique = true, length = 50)
+    private String clienteId;
+
+    @NotBlank(message = "La contraseña es requerido")
+    @Size(min = 8, max = 255, message = "La contraseña debe tener al menos 8 caracteres")
+    @Column(nullable = false)
     private String contrasena;
-    private boolean estado;
+
+    @Column(nullable = false)
+    private Boolean estado = true;
+
+    @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Cuenta> cuentas = new ArrayList<>();
 
     public Cliente(){}
 
-    public Cliente(Long id, String nombre, String genero, int edad, String identificacion, String direccion, String telefono, Long clienteId, String contrasena, boolean estado, List<Cuenta> cuentas) {
-        super(id, nombre, genero, edad, identificacion, direccion, telefono);
+    public Cliente(String nombre, String genero, int edad, String identificacion, String direccion, String telefono, Long id, String clienteId, String contrasena, Boolean estado, List<Cuenta> cuentas) {
+        super(nombre, genero, edad, identificacion, direccion, telefono);
+        this.id = id;
         this.clienteId = clienteId;
         this.contrasena = contrasena;
         this.estado = estado;
         this.cuentas = cuentas;
     }
 
-    public Cliente(Long id, String nombre, String genero, int edad, String identificacion, String direccion, String telefono, Long clienteId, String contrasena, boolean estado) {
-        super(id, nombre, genero, edad, identificacion, direccion, telefono);
-        this.clienteId = clienteId;
-        this.contrasena = contrasena;
-        this.estado = estado;
-    }
-
-    @OneToMany
-    private List<Cuenta> cuentas;
-
-    public Long getClienteId() {
+    public String getClienteId() {
         return clienteId;
     }
 
-    public void setClienteId(Long clienteId) {
+    public void setClienteId(String clienteId) {
         this.clienteId = clienteId;
     }
 

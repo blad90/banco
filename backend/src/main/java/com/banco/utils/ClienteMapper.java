@@ -6,31 +6,31 @@ import com.banco.entidad.Cliente;
 public class ClienteMapper {
 
     public static ClienteDTO mapToDTO(Cliente cliente) {
-        return new ClienteDTO(
-            cliente.getNombre(),
-            cliente.getGenero(),
-            cliente.getEdad(),
-            cliente.getIdentificacion(),
-            cliente.getDireccion(),
-            cliente.getTelefono(),
-            cliente.getClienteId(),
-            cliente.getContrasena(),
-            cliente.getEstado()
-        );
+        return ClienteDTO.builder()
+                .id(cliente.getId())
+                .clienteId(cliente.getClienteId())
+                .nombre(cliente.getNombre())
+                .genero(cliente.getGenero())
+                .edad(cliente.getEdad())
+                .identificacion(cliente.getIdentificacion())
+                .direccion(cliente.getDireccion())
+                .telefono(cliente.getTelefono())
+                .contrasena(cliente.getContrasena())
+                .estado(cliente.getEstado())
+                .build();
     }
 
     public static Cliente mapToEntity(ClienteDTO clienteDTO){
-        return new Cliente(
-                clienteDTO.getId(),
-                clienteDTO.getNombre(),
-                clienteDTO.getGenero(),
-                clienteDTO.getEdad(),
-                clienteDTO.getIdentificacion(),
-                clienteDTO.getDireccion(),
-                clienteDTO.getTelefono(),
-                clienteDTO.getClienteId(),
-                clienteDTO.getContrasena(),
-                clienteDTO.getEstado()
-        );
+        Cliente c = new Cliente();
+        c.setClienteId(clienteDTO.getClienteId());
+        c.setNombre(clienteDTO.getNombre());
+        c.setGenero(clienteDTO.getGenero());
+        c.setEdad(clienteDTO.getEdad());
+        c.setIdentificacion(clienteDTO.getIdentificacion());
+        c.setDireccion(clienteDTO.getDireccion());
+        c.setTelefono(clienteDTO.getTelefono());
+        c.setContrasena(clienteDTO.getContrasena());
+        c.setEstado(clienteDTO.getEstado() != null ? clienteDTO.getEstado() : true);
+        return c;
     }
 }

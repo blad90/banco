@@ -2,8 +2,14 @@ package com.banco.servicio;
 
 import com.banco.dto.ClienteDTO;
 import com.banco.entidad.Cliente;
+import com.banco.excepciones.BusinessException;
+import com.banco.excepciones.ResourceNotFoundException;
 import com.banco.repositorio.IClienteRepositorio;
 import com.banco.utils.ClienteMapper;
+import jakarta.persistence.EntityNotFoundException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -18,27 +24,21 @@ public class ClienteServicio implements IClienteServicio{
     }
 
     @Override
-    public String crearCliente(ClienteDTO clienteDTO) {
-        Cliente nuevoCliente = new Cliente();
-        nuevoCliente.setNombre(clienteDTO.getNombre());
-        nuevoCliente.setGenero(clienteDTO.getGenero());
-        nuevoCliente.setEdad(clienteDTO.getEdad());
-        nuevoCliente.setIdentificacion(clienteDTO.getIdentificacion());
-        nuevoCliente.setDireccion(clienteDTO.getDireccion());
-        nuevoCliente.setTelefono(clienteDTO.getTelefono());
-        nuevoCliente.setClienteId(clienteDTO.getClienteId());
-        nuevoCliente.setContrasena(clienteDTO.getContrasena());
-        nuevoCliente.setEstado(clienteDTO.getEstado());
-
-        clienteRepositorio.save(nuevoCliente);
-
-        return "Cliente registrado exitosamente!";
+    public ClienteDTO crearCliente(ClienteDTO clienteDTO) {
+        if (clienteRepositorio.existsByClienteId(clienteDTO.getClienteId())) {
+            throw new BusinessException("Ya existe un cliente con el clienteId: " + clienteDTO.getClienteId());
+        }
+        if (clienteRepositorio.existsByIdentificacion(clienteDTO.getIdentificacion())) {
+            throw new BusinessException("Ya existe un cliente con la identificación: " + clienteDTO.getIdentificacion());
+        }
+        Cliente cliente = ClienteMapper.mapToEntity(clienteDTO);
+        return ClienteMapper.mapToDTO(clienteRepositorio.save(cliente));
     }
 
     @Override
     public ClienteDTO obtenerCliente(Long id) {
-        return clienteRepositorio.findById(id)
-                .map(ClienteMapper::mapToDTO).get();
+        return ClienteMapper.mapToDTO(clienteRepositorio.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Cliente no encontrado con id: " + id)));
     }
 
     @Override
@@ -60,44 +60,55 @@ public class ClienteServicio implements IClienteServicio{
     }
 
     @Override
-    public String editarCliente(Long id, ClienteDTO clienteDTO) {
-        Cliente clienteEditado = new Cliente();
+    public Page<ClienteDTO> obtenerClientesPaginate(String search, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return clienteRepositorio.findByClienteNombreContainingIgnoreCase(search, pageable)
+                .map(ClienteMapper::mapToDTO);
+    }
+
+    @Override
+    public ClienteDTO editarCliente(String clienteId, ClienteDTO clienteDTO) {
+        Cliente clienteEditado = clienteRepositorio.findClienteByClienteId(clienteId)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Cliente no encontrado: " + clienteId));
+
         clienteEditado.setNombre(clienteDTO.getNombre());
         clienteEditado.setGenero(clienteDTO.getGenero());
         clienteEditado.setEdad(clienteDTO.getEdad());
         clienteEditado.setIdentificacion(clienteDTO.getIdentificacion());
         clienteEditado.setDireccion(clienteDTO.getDireccion());
         clienteEditado.setTelefono(clienteDTO.getTelefono());
-        clienteEditado.setClienteId(clienteDTO.getClienteId());
         clienteEditado.setContrasena(clienteDTO.getContrasena());
         clienteEditado.setEstado(clienteDTO.getEstado());
 
-        clienteRepositorio.save(clienteEditado);
+        Cliente guardado = clienteRepositorio.save(clienteEditado);
 
-        return "Cliente editado exitosamente!";
+        return ClienteMapper.mapToDTO(guardado);
     }
 
     @Override
-    public String actualizarCliente(Long id, ClienteDTO clienteDTO) {
-        Cliente clienteActualizado = new Cliente();
-        clienteActualizado.setNombre(clienteDTO.getNombre());
-        clienteActualizado.setGenero(clienteDTO.getGenero());
-        clienteActualizado.setEdad(clienteDTO.getEdad());
-        clienteActualizado.setIdentificacion(clienteDTO.getIdentificacion());
-        clienteActualizado.setDireccion(clienteDTO.getDireccion());
-        clienteActualizado.setTelefono(clienteDTO.getTelefono());
-        clienteActualizado.setClienteId(clienteDTO.getClienteId());
-        clienteActualizado.setContrasena(clienteDTO.getContrasena());
-        clienteActualizado.setEstado(clienteDTO.getEstado());
-
-        clienteRepositorio.save(clienteActualizado);
-
-        return "Cliente actualizado exitosamente!";
+    public ClienteDTO actualizarCliente(Long id, ClienteDTO clienteDTO) {
+        Cliente clienteEditado = clienteRepositorio.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Cliente no encontrado con id: " + id));
+        // Check uniqueness ignoring self
+        clienteRepositorio.findByClienteId(clienteDTO.getClienteId()).ifPresent(c -> {
+            if (!c.getId().equals(id)) throw new BusinessException("clienteId ya existe!");
+        });
+        clienteEditado.setClienteId(clienteDTO.getClienteId());
+        clienteEditado.setNombre(clienteDTO.getNombre());
+        clienteEditado.setGenero(clienteDTO.getGenero());
+        clienteEditado.setEdad(clienteDTO.getEdad());
+        clienteEditado.setIdentificacion(clienteDTO.getIdentificacion());
+        clienteEditado.setDireccion(clienteDTO.getDireccion());
+        clienteEditado.setTelefono(clienteDTO.getTelefono());
+        clienteEditado.setContrasena(clienteDTO.getContrasena());
+        if (clienteDTO.getEstado() != null) clienteEditado.setEstado(clienteDTO.getEstado());
+        return ClienteMapper.mapToDTO(clienteRepositorio.save(clienteEditado));
     }
 
     @Override
-    public String eliminarCliente(Long id) {
+    public void eliminarCliente(Long id) {
+        clienteRepositorio.findById(id).orElseThrow(() -> new ResourceNotFoundException("Cliente no encontrado con id: " + id));
         clienteRepositorio.deleteById(id);
-        return "Cliente de ID: #" + id + " eliminado";
     }
 }

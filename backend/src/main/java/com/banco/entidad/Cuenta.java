@@ -1,27 +1,48 @@
 package com.banco.entidad;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
 @Entity
-@Table(name = "Cuenta")
+@Table(name = "cuenta", uniqueConstraints = @UniqueConstraint(name = "uk_numero_cuenta", columnNames = "numero_cuenta"))
 public class Cuenta {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
+    @NotBlank(message = "El número de cuenta es obligatorio")
+    @Size(max = 30)
+    @Column(name = "numero_cuenta", nullable = false, unique = true, length = 30)
     private String numeroCuenta;
-    private String tipoCuenta;
-    private BigDecimal saldoInicial;
-    private boolean estado;
 
-    @ManyToOne
+    @NotBlank(message = "El tipo de cuenta es obligatorio")
+    @Column(name = "tipo_cuenta", nullable = false, length = 30)
+    private String tipoCuenta;
+
+    @NotNull(message = "El saldo inicial es obligatorio")
+    @DecimalMin(value = "0.0", message = "El saldo inicial no puede ser negativo")
+    @Column(name = "saldo_inicial", nullable = false, precision = 15, scale = 2)
+    private BigDecimal saldoInicial;
+
+    @Column(name = "saldo_disponible", nullable = false, precision = 15, scale = 2)
+    private BigDecimal saldoDisponible;
+
+    @Column(nullable = false)
+    private Boolean estado = true;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "cliente_id", nullable = false)
     private Cliente cliente;
 
-    @OneToMany
-    private List<Movimiento> movimientos;
+    @OneToMany(mappedBy = "cuenta", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Movimiento> movimientos = new ArrayList<>();
 
     public Cuenta() {
     }
@@ -68,11 +89,19 @@ public class Cuenta {
         this.saldoInicial = saldoInicial;
     }
 
-    public boolean isEstado() {
+    public BigDecimal getSaldoDisponible() {
+        return saldoDisponible;
+    }
+
+    public void setSaldoDisponible(BigDecimal saldoDisponible) {
+        this.saldoDisponible = saldoDisponible;
+    }
+
+    public Boolean getEstado() {
         return estado;
     }
 
-    public void setEstado(boolean estado) {
+    public void setEstado(Boolean estado) {
         this.estado = estado;
     }
 

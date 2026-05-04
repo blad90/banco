@@ -1,43 +1,52 @@
 package com.banco.controlador;
 
 import com.banco.dto.CuentaDTO;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import com.banco.servicio.ClienteServicio;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/cuentas")
-public class CuentaControlador {
+public class CuentaController {
 
-    @PostMapping("/crear")
-    public ResponseEntity<String> crearCuenta(@RequestBody CuentaDTO cuentaDTO){
-        return new ResponseEntity<>("Cuenta creada", HttpStatus.OK);
+    private final CuentaServicio cuentaServicio;
+
+    public CuentaController(CuentaServicio cuentaServicio) {
+        this.cuentaServicio = cuentaServicio;
     }
 
-    @GetMapping("/obtener/{id}")
-    public ResponseEntity<String> obtenerCuenta(@PathVariable Long id){
-        return new ResponseEntity<>("Cuenta obtenida", HttpStatus.OK);
+    @GetMapping
+    public ResponseEntity<List<CuentaDTO>> getAll() {
+        return ResponseEntity.ok(cuentaServicio.findAll());
     }
 
-    @GetMapping("/todos")
-    public ResponseEntity<String> obtenerCuentas(){
-        return new ResponseEntity<>("Cuenta obtenida", HttpStatus.OK);
+    @GetMapping("/{id}")
+    public ResponseEntity<CuentaDTO> getById(@PathVariable Long id) {
+        return ResponseEntity.ok(cuentaServicio.findById(id));
     }
 
-    @PutMapping("/editar/{id}")
-    public ResponseEntity<String> editarCuenta(@PathVariable Long id, CuentaDTO cuentaDTO){
-        return new ResponseEntity<>("Cuenta editada", HttpStatus.OK);
+    @GetMapping("/cliente/{clienteId}")
+    public ResponseEntity<List<CuentaDTO>> getByCliente(@PathVariable Long clienteId) {
+        return ResponseEntity.ok(cuentaServicio.findByCliente(clienteId));
     }
 
-    @PatchMapping("/actualizar/{id}")
-    public ResponseEntity<String> actualizarCuenta(@PathVariable Long id, CuentaDTO cuentaDTO){
-        return new ResponseEntity<>("Cuenta actualizada", HttpStatus.OK);
+    @PostMapping
+    public ResponseEntity<CuentaDTO> create(@Valid @RequestBody CuentaDTO dto) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(cuentaServicio.create(dto));
     }
 
-    @DeleteMapping("/eliminar/{id}")
-    public ResponseEntity<String> eliminarCuenta(@PathVariable Long id){
-        return new ResponseEntity<>("Cuenta eliminada", HttpStatus.OK);
+    @PutMapping("/{id}")
+    public ResponseEntity<CuentaDTO> update(@PathVariable Long id, @Valid @RequestBody CuentaDTO dto) {
+        return ResponseEntity.ok(cuentaServicio.update(id, dto));
     }
 
-
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        cuentaServicio.delete(id);
+        return ResponseEntity.noContent().build();
+    }
 }

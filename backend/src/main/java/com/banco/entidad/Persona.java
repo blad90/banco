@@ -1,28 +1,46 @@
 package com.banco.entidad;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
 
 import java.util.Objects;
 
-@Entity
-@Table(name = "persona")
-@Inheritance(strategy = InheritanceType.JOINED)
-public class Persona {
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long id;
+@MappedSuperclass
+public abstract class Persona {
+    @NotBlank(message = "El nombre es obligatorio")
+    @Size(max = 100)
+    @Column(nullable = false, length = 100)
     private String nombre;
+
+    @NotBlank(message = "El género es obligatorio")
+    @Column(nullable = false, length = 20)
     private String genero;
-    private int edad;
+
+    @NotNull(message = "La edad es obligatoria")
+    @Min(value = 1, message = "La edad debe ser mayor a 0")
+    @Max(value = 120, message = "La edad no puede superar 120")
+    @Column(nullable = false)
+    private Integer edad;
+
+    @NotBlank(message = "La identificación es obligatoria")
+    @Size(max = 20)
+    @Column(nullable = false, unique = true, length = 20)
     private String identificacion;
+
+    @NotBlank(message = "La dirección es obligatoria")
+    @Size(max = 200)
+    @Column(nullable = false, length = 200)
     private String direccion;
+
+    @NotBlank(message = "El teléfono es obligatorio")
+    @Size(max = 20)
+    @Column(nullable = false, length = 20)
     private String telefono;
 
     public Persona() {
     }
 
-    public Persona(Long id, String nombre, String genero, int edad, String identificacion, String direccion, String telefono) {
-        this.id = id;
+    public Persona(String nombre, String genero, int edad, String identificacion, String direccion, String telefono) {
         this.nombre = nombre;
         this.genero = genero;
         this.edad = edad;
@@ -31,13 +49,6 @@ public class Persona {
         this.telefono = telefono;
     }
 
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
 
     public String getNombre() {
         return nombre;
@@ -91,18 +102,17 @@ public class Persona {
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
         Persona persona = (Persona) o;
-        return edad == persona.edad && Objects.equals(id, persona.id) && Objects.equals(nombre, persona.nombre) && Objects.equals(genero, persona.genero) && Objects.equals(identificacion, persona.identificacion) && Objects.equals(direccion, persona.direccion) && Objects.equals(telefono, persona.telefono);
+        return Objects.equals(nombre, persona.nombre) && Objects.equals(genero, persona.genero) && Objects.equals(edad, persona.edad) && Objects.equals(identificacion, persona.identificacion) && Objects.equals(direccion, persona.direccion) && Objects.equals(telefono, persona.telefono);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, nombre, genero, edad, identificacion, direccion, telefono);
+        return Objects.hash(nombre, genero, edad, identificacion, direccion, telefono);
     }
 
     @Override
     public String toString() {
         return "Persona{" +
-                "id=" + id +
                 ", nombre='" + nombre + '\'' +
                 ", genero='" + genero + '\'' +
                 ", edad=" + edad +

@@ -1,29 +1,42 @@
 package com.banco.entidad;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 @Entity
-@Table(name = "movimiento")
+@Table(name = "movimiento", uniqueConstraints = @UniqueConstraint(name = "uk_movimiento", columnNames = {"cuenta_id","fecha","valor"}))
 public class Movimiento {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-    private LocalDate fecha;
+    @Column(nullable = false)
+    private LocalDateTime fecha;
+
+    @NotBlank(message = "El tipo de movimiento es obligatorio")
+    @Column(name = "tipo_movimiento", nullable = false, length = 20)
     private String tipoMovimiento;
+
+    @NotNull(message = "El valor es obligatorio")
+    @Column(nullable = false, precision = 15, scale = 2)
     private BigDecimal valor;
+
+    @Column(nullable = false, precision = 15, scale = 2)
     private BigDecimal saldo;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "cuenta_id", nullable = false)
     private Cuenta cuenta;
 
     public Movimiento() {
     }
 
-    public Movimiento(Long id, LocalDate fecha, String tipoMovimiento, BigDecimal valor, BigDecimal saldo, Cuenta cuenta) {
+    public Movimiento(Long id, LocalDateTime fecha, String tipoMovimiento, BigDecimal valor, BigDecimal saldo, Cuenta cuenta) {
         this.id = id;
         this.fecha = fecha;
         this.tipoMovimiento = tipoMovimiento;
@@ -40,11 +53,11 @@ public class Movimiento {
         this.id = id;
     }
 
-    public LocalDate getFecha() {
+    public LocalDateTime getFecha() {
         return fecha;
     }
 
-    public void setFecha(LocalDate fecha) {
+    public void setFecha(LocalDateTime fecha) {
         this.fecha = fecha;
     }
 

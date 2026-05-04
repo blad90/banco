@@ -1,48 +1,64 @@
+version: '3.9'
+
 services:
-  frontend:
-    build:
-      context: .
-      dockerfile: frontend/Dockerfile
-    image: banco-frontend:1.0.0
-    container_name: banco-frontend
-    ports:
-      - "8082:8082"
-
-  backend:
-    build:
-      context: .
-      dockerfile: backend/Dockerfile
-    image: banco-backend:1.0.0
-    container_name: banco-backend
-    ports:
-      - "8081:8081"
-    environment:
-      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/banco_db
-      - SPRING_DATASOURCE_USERNAME=test
-      - SPRING_DATASOURCE_PASSWORD=test
-    depends_on:
-      mysql:
-        condition: service_healthy
-
-    restart: unless-stopped
 
   mysql:
     image: mysql:8.0
-    container_name: mysql
-    volumes:
-      - db-data:/var/lib/mysql
+    container_name: banco-mysql
     environment:
       MYSQL_ROOT_PASSWORD: test
-      MYSQL_DATABASE: banco_bd
-      MYSQL_USER: test
-      MYSQL_PASSWORD: test
+      MYSQL_DATABASE: bancodb
+      MYSQL_USER: banco_user
+      MYSQL_PASSWORD: banco_pass
     ports:
-      - "3306:3306"
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./BaseDatos.sql:/docker-entrypoint-initdb.d/BaseDatos.sql
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U test" ]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "banco_user", "-pbanco_pass"]
       interval: 10s
       timeout: 5s
-      retries: 5
+      retries: 10
+      start_period: 30s
+    networks:
+      - banco-net
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: banco-backend
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/bancodb
+      SPRING_DATASOURCE_USERNAME: banco_user
+      SPRING_DATASOURCE_PASSWORD: banco_pass
+      BANCO_LIMITE_DIARIO_RETIRO: 1000
+    ports:
+      - "8081:8081"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - banco-net
+    restart: on-failure
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: banco-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - banco-net
+    restart: on-failure
 
 volumes:
-  db-data:
+  mysql_data:
+
+networks:
+  banco-net:
+    driver: bridge

@@ -1,45 +1,47 @@
 package com.banco.controlador;
 
 import com.banco.dto.MovimientoDTO;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import com.banco.service.MovimientoService;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/movimientos")
-public class MovimientoControlador {
+public class MovimientoController {
 
-    @PostMapping("/crear")
-    public ResponseEntity<String> crearMovimiento(@RequestBody MovimientoDTO movimientoDTO){
-        return new ResponseEntity<>("Movimiento creado", HttpStatus.OK);
+    private final MovimientoServicio movimientoServicio;
+
+    public MovimientoController(MovimientoServicio movimientoServicio) {
+        this.movimientoServicio = movimientoServicio;
     }
 
-    @PostMapping("/obtener/{id}")
-    public ResponseEntity<String> obtenerMovimiento(@PathVariable Long id){
-        return new ResponseEntity<>("Movimiento obtenido", HttpStatus.OK);
+    @GetMapping
+    public ResponseEntity<List<MovimientoDTO>> getAll() {
+        return ResponseEntity.ok(movimientoServicio.findAll());
     }
 
-    @PostMapping("/todos")
-    public ResponseEntity<String> obtenerMovimientos(){
-        return new ResponseEntity<>("Movimiento obtenido", HttpStatus.OK);
+    @GetMapping("/{id}")
+    public ResponseEntity<MovimientoDTO> getById(@PathVariable Long id) {
+        return ResponseEntity.ok(movimientoServicio.findById(id));
     }
 
-    @PutMapping("/editar/{id}")
-    public ResponseEntity<String> editarMovimiento(@PathVariable Long id, MovimientoDTO movimientoDTO){
-        return new ResponseEntity<>("Movimiento editado", HttpStatus.OK);
+    @GetMapping("/cuenta/{cuentaId}")
+    public ResponseEntity<List<MovimientoDTO>> getByCuenta(@PathVariable Long cuentaId) {
+        return ResponseEntity.ok(movimientoServicio.findByCuenta(cuentaId));
     }
 
-    @PatchMapping("/actualizar/{id}")
-    public ResponseEntity<String> actualizarMovimiento(@PathVariable Long id, MovimientoDTO movimientoDTO){
-        return new ResponseEntity<>("Movimiento actualizado", HttpStatus.OK);
+    @PostMapping
+    public ResponseEntity<MovimientoDTO> create(@Valid @RequestBody MovimientoDTO dto) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(movimientoServicio.create(dto));
     }
 
-    @DeleteMapping("/eliminar/{id}")
-    public ResponseEntity<String> eliminarMovimiento(@PathVariable Long id){
-        return new ResponseEntity<>("Movimiento eliminado", HttpStatus.OK);
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        movimientoServicio.delete(id);
+        return ResponseEntity.noContent().build();
     }
-
-
-
-
 }

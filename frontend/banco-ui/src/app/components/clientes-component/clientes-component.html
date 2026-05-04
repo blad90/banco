@@ -1,3 +1,61 @@
 <div class="container">
-    <p>clientes-component works!</p>
+  <div class="actions">
+    <button (click)="mostrarCrear()">Nuevo Cliente</button>
+  </div>
+
+  <app-registro-clientes-component
+    *ngIf="mostrarFormulario"
+    [modoEdicion]="modoEdicion"
+    [cliente]="clienteSeleccionado"
+    (guardar)="guardar($event)"
+    (cancelar)="cancelar()">
+  </app-registro-clientes-component>
+
+  <table class="custom-table">
+    <thead>
+      <tr>
+        <th>Nombre</th>
+        <th>Dirección</th>
+        <th>Teléfono</th>
+        <th>Estado</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      <tr *ngFor="let cliente of clientes"
+          (click)="seleccionarCliente(cliente)"
+          [class.selected]="clienteSeleccionado?.clienteId === cliente.clienteId">
+
+        <td>{{ cliente.nombre }}</td>
+        <td>{{ cliente.direccion }}</td>
+        <td>{{ cliente.telefono }}</td>
+        <td>{{ cliente.estado ? 'Activo' : 'Inactivo' }}</td>
+
+        <td>
+          <button (click)="editar(cliente); $event.stopPropagation()">Editar</button>
+          <button (click)="eliminar(cliente); $event.stopPropagation()">Eliminar</button>
+        </td>
+
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- PAGINATION -->
+  <div class="pagination">
+    <button (click)="prevPage()" [disabled]="currentPage === 1">
+      Anterior
+    </button>
+
+    <button *ngFor="let page of pages"
+            (click)="goToPage(page)"
+            [class.active]="currentPage === page">
+      {{ page }}
+    </button>
+
+    <button (click)="nextPage()" [disabled]="currentPage === totalPages">
+      Siguiente
+    </button>
+  </div>
+
 </div>

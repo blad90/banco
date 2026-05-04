@@ -1,41 +1,46 @@
 package com.banco.controlador;
 
 import com.banco.dto.ClienteDTO;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import com.banco.servicio.ClienteServicio;
+import jakarta.validation.Valid;
+import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/clientes")
-public class ClienteControlador {
+public class ClienteController {
 
-    @PostMapping("/crear")
-    public ResponseEntity<String> crearCliente(@RequestBody ClienteDTO clienteDTO){
-        return new ResponseEntity<>("Cliente creado", HttpStatus.OK);
+    private final ClienteServicio clienteServicio;
+
+    public ClienteController(ClienteServicio clienteServicio) {
+        this.clienteServicio = clienteServicio;
     }
 
-    @GetMapping("/obtener/{id}")
-    public ResponseEntity<String> obtenerCliente(@PathVariable Long id){
-        return new ResponseEntity<>("Cliente obtenido", HttpStatus.OK);
+    @GetMapping
+    public ResponseEntity<List<ClienteDTO>> getAll() {
+        return ResponseEntity.ok(clienteServicio.findAll());
     }
 
-    @GetMapping("/todos")
-    public ResponseEntity<String> obtenerClientes(){
-        return new ResponseEntity<>("Cliente obtenido", HttpStatus.OK);
+    @GetMapping("/{id}")
+    public ResponseEntity<ClienteDTO> getById(@PathVariable Long id) {
+        return ResponseEntity.ok(clienteServicio.findById(id));
     }
 
-    @PutMapping("/editar/{id}")
-    public ResponseEntity<String> editarCliente(@PathVariable Long id, ClienteDTO clienteDTO){
-        return new ResponseEntity<>("Cliente editado", HttpStatus.OK);
+    @PostMapping
+    public ResponseEntity<ClienteDTO> create(@Valid @RequestBody ClienteDTO dto) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(clienteServicio.create(dto));
     }
 
-    @PatchMapping("/actualizar/{id}")
-    public ResponseEntity<String> actualizarCliente(@PathVariable Long id, ClienteDTO clienteDTO){
-        return new ResponseEntity<>("Cliente actualizado", HttpStatus.OK);
+    @PutMapping("/{id}")
+    public ResponseEntity<ClienteDTO> update(@PathVariable Long id, @Valid @RequestBody ClienteDTO dto) {
+        return ResponseEntity.ok(clienteServicio.update(id, dto));
     }
 
-    @DeleteMapping("/eliminar/{id}")
-    public ResponseEntity<String> eliminarCliente(@PathVariable Long id){
-        return new ResponseEntity<>("Cliente eliminado", HttpStatus.OK);
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        clienteServicio.delete(id);
+        return ResponseEntity.noContent().build();
     }
 }
