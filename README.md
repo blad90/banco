@@ -1,6 +1,6 @@
 # Banco App
 
-Technologies: **Spring Boot 3** + **Angular 17** + **MySQL 8** + **Docker**
+Technologies: **Spring Boot** + **Angular** + **MySQL** + **Docker**
 
 ## Architecture
 
