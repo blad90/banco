@@ -46,6 +46,7 @@ public class ClienteServicio implements IClienteServicio{
         return clienteRepositorio.findAll()
                 .stream()
                 .map(cliente -> new ClienteDTO(
+                        cliente.getId(),
                         cliente.getNombre(),
                         cliente.getGenero(),
                         cliente.getEdad(),
@@ -91,7 +92,7 @@ public class ClienteServicio implements IClienteServicio{
         Cliente clienteEditado = clienteRepositorio.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Cliente no encontrado con id: " + id));
         // Check uniqueness ignoring self
-        clienteRepositorio.findByClienteId(clienteDTO.getClienteId()).ifPresent(c -> {
+        clienteRepositorio.findClienteByClienteId(clienteDTO.getClienteId()).ifPresent(c -> {
             if (!c.getId().equals(id)) throw new BusinessException("clienteId ya existe!");
         });
         clienteEditado.setClienteId(clienteDTO.getClienteId());
@@ -102,7 +103,7 @@ public class ClienteServicio implements IClienteServicio{
         clienteEditado.setDireccion(clienteDTO.getDireccion());
         clienteEditado.setTelefono(clienteDTO.getTelefono());
         clienteEditado.setContrasena(clienteDTO.getContrasena());
-        if (clienteDTO.getEstado() != null) clienteEditado.setEstado(clienteDTO.getEstado());
+        clienteEditado.setEstado(clienteDTO.getEstado());
         return ClienteMapper.mapToDTO(clienteRepositorio.save(clienteEditado));
     }
 

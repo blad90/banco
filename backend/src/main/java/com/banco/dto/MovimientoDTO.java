@@ -3,13 +3,14 @@ package com.banco.dto;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import org.springframework.boot.context.properties.bind.DefaultValue;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 public class MovimientoDTO {
     private Long id;
-    private LocalDateTime fecha;
+    private LocalDateTime fecha = LocalDateTime.now();
 
     @NotBlank(message = "El tipo de movimiento es requerido")
     private String tipoMovimiento;
@@ -28,6 +29,20 @@ public class MovimientoDTO {
 
     public static MovimientoDTO builder() {
         return new MovimientoDTO();
+    }
+
+    public MovimientoDTO() {
+    }
+
+    public MovimientoDTO(Long id, LocalDateTime fecha, String tipoMovimiento, BigDecimal valor, BigDecimal saldo, Long cuentaId, String numeroCuenta, String tipoCuenta) {
+        this.id = id;
+        this.fecha = fecha;
+        this.tipoMovimiento = tipoMovimiento;
+        this.valor = valor;
+        this.saldo = saldo;
+        this.cuentaId = cuentaId;
+        this.numeroCuenta = numeroCuenta;
+        this.tipoCuenta = tipoCuenta;
     }
 
     public Long getId() {

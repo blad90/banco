@@ -13,7 +13,7 @@ import java.util.Optional;
 public interface IClienteRepositorio extends JpaRepository<Cliente, Long> {
 
     @Query(value = """
-    SELECT new com.banco.dto.ClienteDTO(c.nombre, c.genero, c.edad, c.identificacion, c.direccion, c.telefono, c.clienteId, c.contrasena, c.estado)
+    SELECT new com.banco.dto.ClienteDTO(c.id, c.nombre, c.genero, c.edad, c.identificacion, c.direccion, c.telefono, c.clienteId, c.contrasena, c.estado)
     FROM Cliente c
     WHERE LOWER(c.nombre) LIKE LOWER(CONCAT('%', :search, '%'))
     ORDER BY c.identificacion

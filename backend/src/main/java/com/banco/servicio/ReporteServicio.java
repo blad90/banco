@@ -7,6 +7,10 @@ import com.banco.entidad.Movimiento;
 import com.banco.excepciones.ResourceNotFoundException;
 import com.banco.repositorio.IClienteRepositorio;
 import com.banco.repositorio.IMovimientoRepositorio;
+import com.itextpdf.text.*;
+import com.itextpdf.text.pdf.PdfPCell;
+import com.itextpdf.text.pdf.PdfPTable;
+import com.itextpdf.text.pdf.PdfWriter;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
@@ -19,7 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
-public class ReporteServicio {
+public class ReporteServicio implements IReporteServicio{
     private final IClienteRepositorio clienteRepositorio;
     private final IMovimientoRepositorio movimientoRepositorio;
 
@@ -42,16 +46,17 @@ public class ReporteServicio {
         List<ReporteDTO> reporte = new ArrayList<>();
         for (Movimiento m : movimientos) {
             Cuenta cuenta = m.getCuenta();
-            ReporteDTO dto = ReporteDTO.builder()
-                    .fecha(m.getFecha().format(FMT))
-                    .cliente(cliente.getNombre())
-                    .numeroCuenta(cuenta.getNumeroCuenta())
-                    .tipo(cuenta.getTipoCuenta())
-                    .saldoInicial(cuenta.getSaldoInicial())
-                    .estado(cuenta.getEstado())
-                    .movimiento(m.getValor())
-                    .saldoDisponible(m.getSaldo())
-                    .build();
+
+            ReporteDTO dto = new ReporteDTO(
+                    m.getFecha().format(FMT),
+                    cliente.getNombre(),
+                    cuenta.getNumeroCuenta(),
+                    cuenta.getTipoCuenta(),
+                    cuenta.getSaldoInicial(),
+                    cuenta.getEstado(),
+                    m.getValor(),
+                    m.getSaldo()
+            );
             reporte.add(dto);
         }
         return reporte;
@@ -123,7 +128,6 @@ public class ReporteServicio {
             doc.add(table);
             doc.add(Chunk.NEWLINE);
 
-            // Summary
             Font summaryFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 11);
             doc.add(new Paragraph("Total Créditos: $" + totalCreditos, summaryFont));
             doc.add(new Paragraph("Total Débitos: $" + totalDebitos, summaryFont));

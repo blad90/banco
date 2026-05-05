@@ -6,18 +6,18 @@ import com.banco.entidad.Cliente;
 public class ClienteMapper {
 
     public static ClienteDTO mapToDTO(Cliente cliente) {
-        return ClienteDTO.builder()
-                .id(cliente.getId())
-                .clienteId(cliente.getClienteId())
-                .nombre(cliente.getNombre())
-                .genero(cliente.getGenero())
-                .edad(cliente.getEdad())
-                .identificacion(cliente.getIdentificacion())
-                .direccion(cliente.getDireccion())
-                .telefono(cliente.getTelefono())
-                .contrasena(cliente.getContrasena())
-                .estado(cliente.getEstado())
-                .build();
+        return new ClienteDTO(
+                cliente.getId(),
+                cliente.getNombre(),
+                cliente.getGenero(),
+                cliente.getEdad(),
+                cliente.getIdentificacion(),
+                cliente.getDireccion(),
+                cliente.getTelefono(),
+                cliente.getClienteId(),
+                cliente.getContrasena(),
+                cliente.getEstado()
+                );
     }
 
     public static Cliente mapToEntity(ClienteDTO clienteDTO){
@@ -30,7 +30,7 @@ public class ClienteMapper {
         c.setDireccion(clienteDTO.getDireccion());
         c.setTelefono(clienteDTO.getTelefono());
         c.setContrasena(clienteDTO.getContrasena());
-        c.setEstado(clienteDTO.getEstado() != null ? clienteDTO.getEstado() : true);
+        c.setEstado(clienteDTO.getEstado());
         return c;
     }
 }

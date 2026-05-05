@@ -5,8 +5,12 @@ import { MovimientosComponent } from './components/movimientos-component/movimie
 import { ReportesComponent } from './components/reportes-component/reportes-component';
 
 export const routes: Routes = [
+    { path: '', redirectTo: '/clientes', pathMatch: 'full' },
     { path: 'clientes', component: ClientesComponent },
     { path: 'cuentas', component: CuentasComponent },
     { path: 'movimientos', component: MovimientosComponent },
     { path: 'reportes', component: ReportesComponent },
+    { path: '**', redirectTo: '/clientes' }
 ];
+
+

@@ -16,7 +16,7 @@ public class Movimiento {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     @Column(nullable = false)
-    private LocalDateTime fecha;
+    private LocalDateTime fecha = LocalDateTime.now();
 
     @NotBlank(message = "El tipo de movimiento es obligatorio")
     @Column(name = "tipo_movimiento", nullable = false, length = 20)

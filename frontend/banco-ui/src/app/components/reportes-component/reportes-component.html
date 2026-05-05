@@ -1,1 +1,90 @@
-<p>reportes-component works!</p>
+<div class="page">
+  <div *ngIf="toast()" [class]="'alert alert-' + (toast()!.type === 'success' ? 'success' : 'error')">
+    {{ toast()!.msg }}
+  </div>
+
+  <div class="page-header">
+    <h2>Estado de Cuenta</h2>
+  </div>
+
+  <div class="card">
+    <h3 style="margin-bottom:16px;color:#1a5276;font-size:15px;">Filtros de Busqueda</h3>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Cliente *</label>
+        <select class="form-control" [(ngModel)]="filtros.clienteId" name="clienteId">
+          <option [ngValue]="0" disabled>-- Seleccione cliente --</option>
+          <option *ngFor="let c of clientes()" [ngValue]="c.id">{{ c.nombre }}</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Fecha Inicio *</label>
+        <input class="form-control" type="date" [(ngModel)]="filtros.fechaInicio" name="fechaInicio">
+      </div>
+      <div class="form-group">
+        <label>Fecha Fin *</label>
+        <input class="form-control" type="date" [(ngModel)]="filtros.fechaFin" name="fechaFin">
+      </div>
+    </div>
+    <div class="form-actions" style="justify-content:flex-start;gap:10px;margin-top:12px">
+      <button class="btn btn-primary" (click)="buscar()" [disabled]="loading()">
+        {{ loading() ? 'Buscando...' : 'Generar Reporte' }}
+      </button>
+      <button class="btn btn-success" (click)="descargarPdf()" [disabled]="downloading() || reporte().length === 0">
+        {{ downloading() ? 'Descargando...' : 'Descargar PDF' }}
+      </button>
+    </div>
+  </div>
+
+  <div *ngIf="reporte().length > 0">
+    <div class="summary-grid">
+      <div class="summary-card">
+        <div class="label">Movimientos</div>
+        <div class="value">{{ reporte().length }}</div>
+      </div>
+      <div class="summary-card credit">
+        <div class="label">Total Creditos</div>
+        <div class="value">${{ totalCreditos | number:'1.2-2' }}</div>
+      </div>
+      <div class="summary-card debit">
+        <div class="label">Total Debitos</div>
+        <div class="value">${{ totalDebitos | number:'1.2-2' }}</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Fecha</th><th>Cliente</th><th>N° Cuenta</th>
+              <th>Tipo</th><th>Saldo Inicial</th><th>Estado</th>
+              <th>Movimiento</th><th>Saldo Disponible</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let r of reporte()">
+              <td>{{ r['Fecha'] }}</td>
+              <td>{{ r['Cliente'] }}</td>
+              <td><strong>{{ r['Numero Cuenta'] }}</strong></td>
+              <td>{{ r['Tipo'] }}</td>
+              <td style="text-align:right">\${{ r['Saldo Inicial'] | number:'1.2-2' }}</td>
+              <td><span [class]="'badge ' + (r['Estado'] ? 'badge-success' : 'badge-danger')">{{ r['Estado'] ? 'Activa' : 'Inactiva' }}</span></td>
+              <td [style.color]="r['Movimiento'] >= 0 ? '#1e8449' : '#c0392b'" style="text-align:right;font-weight:700">
+                {{ r['Movimiento'] >= 0 ? '+' : '' }}${{ r['Movimiento'] | number:'1.2-2' }}
+              </td>
+              <td style="text-align:right;font-weight:600">${{ r['Saldo Disponible'] | number:'1.2-2' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="!loading() && reporte().length === 0" class="card">
+    <div class="empty-state">
+      <div class="icon">📊</div>
+      <div>Seleccione un cliente y rango de fechas para generar el reporte.</div>
+    </div>
+  </div>
+</div>

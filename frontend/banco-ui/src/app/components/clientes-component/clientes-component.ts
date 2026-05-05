@@ -1,132 +1,78 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule, NgForm } from '@angular/forms';
+import { Cliente } from '../../common/cliente';
 import { ClienteService } from '../../services/cliente-service';
-import { FormsModule } from '@angular/forms';
-import { RegistroClientesComponent } from "../registro-clientes-component/registro-clientes-component";
 
 @Component({
-  selector: 'app-clientes-component',
+  selector: 'app-clientes',
   standalone: true,
-  imports: [CommonModule, FormsModule, RegistroClientesComponent],
+  imports: [CommonModule, FormsModule],
   templateUrl: './clientes-component.html',
-  styleUrl: './clientes-component.css',
 })
-export class ClientesComponent {
+export class ClientesComponent implements OnInit {
+  clientes = signal<Cliente[]>([]);
+  search = signal('');
+  loading = signal(false);
+  toast = signal<{type: string; msg: string} | null>(null);
+  showModal = signal(false);
+  editMode = signal(false);
+  saving = signal(false);
 
-  clientes: ICliente[] = [];
+  filtered = computed(() => {
+    const q = this.search().toLowerCase();
+    return this.clientes().filter(c =>
+      c.nombre.toLowerCase().includes(q) ||
+      c.clienteId.toLowerCase().includes(q) ||
+      c.identificacion.toLowerCase().includes(q) ||
+      c.telefono.includes(q)
+    );
+  });
 
-  currentPage = 1;
-  totalPages = 0;
+  form: Cliente = this.emptyForm();
 
-  pages: number[] = [];
+  constructor(private clienteService: ClienteService) {}
 
-  mostrarFormulario = false;
-  modoEdicion = false;
-  clienteSeleccionado: ICliente = this.resetearDatos();
+  ngOnInit() { this.load(); }
 
-  page = 0;
-
-  constructor(private clienteService: ClienteService) { }
-
-  ngOnInit() {
-    this.loadClientes();
-  }
-
-  loadClientes(page: number = 0) {
-    this.clienteService.getClientes(page).subscribe(res => {
-      this.clientes = res.content;
-      this.page = res.number;
-
-      this.currentPage = res.number + 1;
-      this.totalPages = res.totalPages;
-
-      this.updatePages();
+  load() {
+    this.loading.set(true);
+    this.clienteService.getClientes().subscribe({
+      next: data => { this.clientes.set(data); this.loading.set(false); },
+      error: () => { this.showToast('error', 'Error al cargar clientes'); this.loading.set(false); }
     });
   }
 
-  seleccionarCliente(cliente: ICliente) {
-    this.clienteSeleccionado = cliente;
+  openCreate() { this.form = this.emptyForm(); this.editMode.set(false); this.showModal.set(true); }
+
+  openEdit(c: Cliente) { this.form = { ...c }; this.editMode.set(true); this.showModal.set(true); }
+
+  save(f: NgForm) {
+    if (f.invalid) { f.form.markAllAsTouched(); return; }
+    this.saving.set(true);
+    const obs = this.editMode()
+      ? this.clienteService.updateCliente(this.form.id!, this.form)
+      : this.clienteService.createCliente(this.form);
+    obs.subscribe({
+      next: () => { this.showToast('success', this.editMode() ? 'Cliente actualizado' : 'Cliente creado'); this.showModal.set(false); this.load(); this.saving.set(false); },
+      error: (e) => { this.showToast('error', e.error?.message || 'Error al guardar'); this.saving.set(false); }
+    });
   }
 
-  resetearDatos(): ICliente {
-    return {
-      id: null,
-      nombre: '',
-      genero: '',
-      edad: 0,
-      identificacion: '',
-      direccion: '',
-      telefono: '',
-      clienteId: '',
-      contrasena: '',
-      estado: true
-    };
+  delete(c: Cliente) {
+    if (!confirm(`¿Eliminar al cliente "${c.nombre}"?`)) return;
+    this.clienteService.deleteCliente(c.id!).subscribe({
+      next: () => { this.showToast('success', 'Cliente eliminado'); this.load(); },
+      error: (e) => this.showToast('error', e.error?.message || 'Error al eliminar')
+    });
   }
 
-  mostrarCrear() {
-    this.modoEdicion = false;
-    this.clienteSeleccionado = this.resetearDatos();
-    this.mostrarFormulario = true;
+  showToast(type: string, msg: string) {
+    this.toast.set({ type, msg });
+    setTimeout(() => this.toast.set(null), 3500);
   }
 
-  editar(cliente: ICliente) {
-    this.modoEdicion = true;
-    this.clienteSeleccionado = { ...cliente };
-    this.mostrarFormulario = true;
-  }
-
-  guardar(cliente: ICliente) {
-    if (this.modoEdicion) {
-      this.clienteService.editarCliente(cliente).subscribe(() => {
-        this.limpiarDatos();
-      });
-    } else {
-      this.clienteService.crearCliente(cliente).subscribe(() => {
-        this.limpiarDatos();
-      });
-    }
-  }
-
-  limpiarDatos() {
-    this.loadClientes(this.page);
-    this.cancelar();
-  }
-
-  cancelar() {
-    this.mostrarFormulario = false;
-    this.modoEdicion = false;
-  }
-
-  eliminar(cliente: ICliente) {
-    if (!cliente.id) return;
-
-    if (confirm(`Eliminar ${cliente.nombre}?`)) {
-      this.clienteService.removerCliente(cliente.id).subscribe(() => {
-        this.loadClientes(this.page);
-      });
-    }
-  }
-
-  updatePages() {
-    this.pages = this.totalPages > 0
-      ? Array.from({ length: this.totalPages }, (_, i) => i + 1)
-      : [];
-  }
-
-  goToPage(page: number) {
-    this.currentPage = page;
-    this.loadClientes(page - 1);
-  }
-
-  nextPage() {
-    if (this.currentPage < this.totalPages) {
-      this.goToPage(this.currentPage + 1);
-    }
-  }
-
-  prevPage() {
-    if (this.currentPage > 1) {
-      this.goToPage(this.currentPage - 1);
-    }
+  emptyForm(): Cliente {
+    return { clienteId: '', nombre: '', genero: 'Masculino', edad: 18, identificacion: '', direccion: '', telefono: '', contrasena: '', estado: true };
   }
 }

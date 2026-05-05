@@ -1,5 +1,7 @@
 package com.banco.excepciones;
 
+import com.banco.dto.CuentaDTO;
+
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -21,6 +23,10 @@ public class ErrorResponse {
         this.message = message;
         this.path = path;
         this.validationErrors = validationErrors;
+    }
+
+    public static ErrorResponse builder() {
+        return new ErrorResponse();
     }
 
     public LocalDateTime getTimestamp() {

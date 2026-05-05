@@ -42,6 +42,18 @@ public class Cliente extends Persona{
         this.cuentas = cuentas;
     }
 
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public void setEstado(Boolean estado) {
+        this.estado = estado;
+    }
+
     public String getClienteId() {
         return clienteId;
     }

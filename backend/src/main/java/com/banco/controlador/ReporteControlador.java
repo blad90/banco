@@ -1,8 +1,7 @@
-package com.banco.controller;
+package com.banco.controlador;
 
 import com.banco.dto.ReporteDTO;
-import com.banco.service.ReporteService;
-import lombok.RequiredArgsConstructor;
+import com.banco.servicio.IReporteServicio;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
@@ -14,7 +13,11 @@ import java.util.*;
 @RequestMapping("/api/reportes")
 public class ReporteControlador {
 
-    private final ReporteServicio reporteServicio;
+    private final IReporteServicio reporteServicio;
+
+    public ReporteControlador(IReporteServicio reporteServicio) {
+        this.reporteServicio = reporteServicio;
+    }
 
     @GetMapping
     public ResponseEntity<List<ReporteDTO>> getReporte(

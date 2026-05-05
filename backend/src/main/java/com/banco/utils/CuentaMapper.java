@@ -6,16 +6,15 @@ import com.banco.entidad.Cuenta;
 
 public class CuentaMapper {
     public static CuentaDTO toDTO(Cuenta cuenta) {
-        return CuentaDTO.builder()
-                .id(cuenta.getId())
-                .numeroCuenta(cuenta.getNumeroCuenta())
-                .tipoCuenta(cuenta.getTipoCuenta())
-                .saldoInicial(cuenta.getSaldoInicial())
-                .saldoDisponible(cuenta.getSaldoDisponible())
-                .estado(cuenta.getEstado())
-                .clienteId(cuenta.getCliente().getId())
-                .clienteNombre(cuenta.getCliente().getNombre())
-                .build();
+        return new CuentaDTO(
+                cuenta.getId(),
+                cuenta.getNumeroCuenta(),
+                cuenta.getTipoCuenta(),
+                cuenta.getSaldoInicial(),
+                cuenta.getSaldoDisponible(),
+                cuenta.getEstado(),
+                cuenta.getCliente().getId(),
+                cuenta.getCliente().getNombre());
     }
 
     public static Cuenta toEntity(CuentaDTO dto, Cliente cliente) {

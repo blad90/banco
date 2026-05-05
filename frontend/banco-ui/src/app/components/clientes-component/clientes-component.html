@@ -1,61 +1,154 @@
-<div class="container">
-  <div class="actions">
-    <button (click)="mostrarCrear()">Nuevo Cliente</button>
+<div class="page">
+  <!-- Toast -->
+  <div *ngIf="toast()" [class]="'alert alert-' + (toast()!.type === 'success' ? 'success' : 'error')">
+    <span>{{ toast()!.type === 'success' ? 'OK' : 'ERROR' }}</span>
+    {{ toast()!.msg }}
   </div>
 
-  <app-registro-clientes-component
-    *ngIf="mostrarFormulario"
-    [modoEdicion]="modoEdicion"
-    [cliente]="clienteSeleccionado"
-    (guardar)="guardar($event)"
-    (cancelar)="cancelar()">
-  </app-registro-clientes-component>
-
-  <table class="custom-table">
-    <thead>
-      <tr>
-        <th>Nombre</th>
-        <th>Dirección</th>
-        <th>Teléfono</th>
-        <th>Estado</th>
-        <th>Acciones</th>
-      </tr>
-    </thead>
-
-    <tbody>
-      <tr *ngFor="let cliente of clientes"
-          (click)="seleccionarCliente(cliente)"
-          [class.selected]="clienteSeleccionado?.clienteId === cliente.clienteId">
-
-        <td>{{ cliente.nombre }}</td>
-        <td>{{ cliente.direccion }}</td>
-        <td>{{ cliente.telefono }}</td>
-        <td>{{ cliente.estado ? 'Activo' : 'Inactivo' }}</td>
-
-        <td>
-          <button (click)="editar(cliente); $event.stopPropagation()">Editar</button>
-          <button (click)="eliminar(cliente); $event.stopPropagation()">Eliminar</button>
-        </td>
-
-      </tr>
-    </tbody>
-  </table>
-
-  <!-- PAGINATION -->
-  <div class="pagination">
-    <button (click)="prevPage()" [disabled]="currentPage === 1">
-      Anterior
-    </button>
-
-    <button *ngFor="let page of pages"
-            (click)="goToPage(page)"
-            [class.active]="currentPage === page">
-      {{ page }}
-    </button>
-
-    <button (click)="nextPage()" [disabled]="currentPage === totalPages">
-      Siguiente
-    </button>
+  <div class="page-header">
+    <h2>Gestión de Clientes</h2>
+    <button class="btn btn-primary" (click)="openCreate()">＋ Nuevo Cliente</button>
   </div>
 
+  <div class="card">
+    <div class="toolbar">
+      <div class="search-box">
+        <span>Buscar...</span>
+        <input type="text" placeholder="Buscar por nombre, ID, identificación..."
+               [value]="search()" (input)="search.set($any($event.target).value)">
+      </div>
+      <span class="text-muted" style="color:#566573;font-size:13px;">
+        {{ filtered().length }} registro(s)
+      </span>
+    </div>
+
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>ID Cliente</th>
+            <th>Nombre</th>
+            <th>Género</th>
+            <th>Edad</th>
+            <th>Identificación</th>
+            <th>Teléfono</th>
+            <th>Dirección</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="loading()">
+            <td colspan="9" style="text-align:center;padding:32px;color:#888">Cargando...</td>
+          </tr>
+          <tr *ngIf="!loading() && filtered().length === 0">
+            <td colspan="9">
+              <div class="empty-state"><div class="icon">👤</div><div>No hay clientes</div></div>
+            </td>
+          </tr>
+          <tr *ngFor="let c of filtered()">
+            <td><strong>{{ c.clienteId }}</strong></td>
+            <td>{{ c.nombre }}</td>
+            <td>{{ c.genero }}</td>
+            <td>{{ c.edad }}</td>
+            <td>{{ c.identificacion }}</td>
+            <td>{{ c.telefono }}</td>
+            <td>{{ c.direccion }}</td>
+            <td><span [class]="'badge ' + (c.estado ? 'badge-success' : 'badge-danger')">{{ c.estado ? 'Activo' : 'Inactivo' }}</span></td>
+            <td>
+              <div class="actions-col">
+                <button class="btn btn-warning btn-sm" (click)="openEdit(c)">✏️</button>
+                <button class="btn btn-danger btn-sm" (click)="delete(c)">🗑️</button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal-backdrop" *ngIf="showModal()" (click)="showModal.set(false)">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>{{ editMode() ? 'Editar Cliente' : 'Nuevo Cliente' }}</h3>
+      <button class="modal-close" (click)="showModal.set(false)">✕</button>
+    </div>
+    <form #f="ngForm" (ngSubmit)="save(f)">
+      <div class="modal-body">
+        <div class="form-row">
+          <div class="form-group">
+            <label>ID Cliente *</label>
+            <input class="form-control" [class.is-invalid]="clienteId.invalid && clienteId.touched"
+                   name="clienteId" [(ngModel)]="form.clienteId" #clienteId="ngModel" required maxlength="50">
+            <div class="invalid-feedback" *ngIf="clienteId.invalid && clienteId.touched">Requerido</div>
+          </div>
+          <div class="form-group">
+            <label>Nombre Completo *</label>
+            <input class="form-control" [class.is-invalid]="nombre.invalid && nombre.touched"
+                   name="nombre" [(ngModel)]="form.nombre" #nombre="ngModel" required maxlength="100">
+            <div class="invalid-feedback" *ngIf="nombre.invalid && nombre.touched">Requerido</div>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Género *</label>
+            <select class="form-control" name="genero" [(ngModel)]="form.genero" required>
+              <option value="Masculino">Masculino</option>
+              <option value="Femenino">Femenino</option>
+              <option value="Otro">Otro</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Edad *</label>
+            <input class="form-control" [class.is-invalid]="edad.invalid && edad.touched"
+                   type="number" name="edad" [(ngModel)]="form.edad" #edad="ngModel" required min="1" max="120">
+            <div class="invalid-feedback" *ngIf="edad.invalid && edad.touched">Requerido (1-120)</div>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Identificación *</label>
+            <input class="form-control" [class.is-invalid]="identificacion.invalid && identificacion.touched"
+                   name="identificacion" [(ngModel)]="form.identificacion" #identificacion="ngModel" required maxlength="20">
+            <div class="invalid-feedback" *ngIf="identificacion.invalid && identificacion.touched">Requerido</div>
+          </div>
+          <div class="form-group">
+            <label>Teléfono *</label>
+            <input class="form-control" [class.is-invalid]="telefono.invalid && telefono.touched"
+                   name="telefono" [(ngModel)]="form.telefono" #telefono="ngModel" required maxlength="20">
+            <div class="invalid-feedback" *ngIf="telefono.invalid && telefono.touched">Requerido</div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Dirección *</label>
+          <input class="form-control" [class.is-invalid]="direccion.invalid && direccion.touched"
+                 name="direccion" [(ngModel)]="form.direccion" #direccion="ngModel" required maxlength="200">
+          <div class="invalid-feedback" *ngIf="direccion.invalid && direccion.touched">Requerido</div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Contraseña *</label>
+            <input class="form-control" [class.is-invalid]="contrasena.invalid && contrasena.touched"
+                   type="password" name="contrasena" [(ngModel)]="form.contrasena" #contrasena="ngModel" required minlength="4">
+            <div class="invalid-feedback" *ngIf="contrasena.invalid && contrasena.touched">Mínimo 4 caracteres</div>
+          </div>
+          <div class="form-group">
+            <label>Estado</label>
+            <select class="form-control" name="estado" [(ngModel)]="form.estado">
+              <option [ngValue]="true">Activo</option>
+              <option [ngValue]="false">Inactivo</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline" (click)="showModal.set(false)">Cancelar</button>
+        <button type="submit" class="btn btn-primary" [disabled]="saving()">
+          {{ saving() ? 'Guardando...' : (editMode() ? 'Actualizar' : 'Crear') }}
+        </button>
+      </div>
+    </form>
+  </div>
 </div>

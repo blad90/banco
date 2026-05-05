@@ -41,13 +41,13 @@ public class GlobalExceptionHandler {
     }
 
     private ErrorResponse buildError(HttpStatus status, String message, String path, List<String> validationErrors) {
-        return ErrorResponse.builder()
-                .timestamp(LocalDateTime.now())
-                .status(status.value())
-                .error(status.getReasonPhrase())
-                .message(message)
-                .path(path)
-                .validationErrors(validationErrors)
-                .build();
+        return new ErrorResponse(
+                LocalDateTime.now(),
+                status.value(),
+                status.getReasonPhrase(),
+                message,
+                path,
+                validationErrors
+                );
     }
 }

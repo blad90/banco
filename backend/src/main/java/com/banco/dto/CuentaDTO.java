@@ -30,6 +30,17 @@ public class CuentaDTO {
     public CuentaDTO() {
     }
 
+    public CuentaDTO(Long id, String numeroCuenta, String tipoCuenta, BigDecimal saldoInicial, BigDecimal saldoDisponible, Boolean estado, Long clienteId, String clienteNombre) {
+        this.id = id;
+        this.numeroCuenta = numeroCuenta;
+        this.tipoCuenta = tipoCuenta;
+        this.saldoInicial = saldoInicial;
+        this.saldoDisponible = saldoDisponible;
+        this.estado = estado;
+        this.clienteId = clienteId;
+        this.clienteNombre = clienteNombre;
+    }
+
     public static CuentaDTO builder() {
         return new CuentaDTO();
     }
