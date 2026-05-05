@@ -30,7 +30,7 @@ services:
       dockerfile: Dockerfile
     container_name: banco-backend
     environment:
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/bancodb
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/banco_db
       SPRING_DATASOURCE_USERNAME: banco_user
       SPRING_DATASOURCE_PASSWORD: banco_pass
       BANCO_LIMITE_DIARIO_RETIRO: 1000
@@ -49,7 +49,7 @@ services:
       dockerfile: Dockerfile
     container_name: banco-frontend
     ports:
-      - "80:80"
+      - "4200:4200"
     depends_on:
       - backend
     networks:
