@@ -2,6 +2,10 @@ CREATE DATABASE IF NOT EXISTS banco_db
   CHARACTER SET utf8mb4
   COLLATE utf8mb4_unicode_ci;
 
+CREATE USER IF NOT EXISTS 'banco_user'@'%' IDENTIFIED BY 'banco_pass';
+GRANT ALL PRIVILEGES ON banco_db.* TO 'banco_user'@'%';
+FLUSH PRIVILEGES;
+
 USE banco_db;
 
 CREATE TABLE IF NOT EXISTS clientes (
